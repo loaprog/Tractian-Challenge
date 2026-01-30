@@ -39,3 +39,15 @@ def train_model(series_id: str, data: list, db: Session):
     db.commit()
 
     return series.series_id, new_version
+
+def list_models(db: Session):
+    return db.query(Model).all()
+
+def delete_series_and_models(series_id: str, db: Session):
+    series = db.query(TimeSeries).filter(TimeSeries.id == series_id).first()
+    if not series:
+        raise HTTPException(status_code=404, detail="Série não encontrada")
+    db.query(Model).filter(Model.time_series_id == series.id).delete()
+    db.delete(series)
+    db.commit()
+    return {"detail": "Série e modelos vinculados deletados com sucesso"}
