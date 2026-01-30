@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import List
 from datetime import datetime
+from datetime import date
 
 class DataPoint(BaseModel):
     timestamp: int
@@ -14,13 +15,6 @@ class TrainResponse(BaseModel):
     series_id: str
     model_version: int
 
-class TimeSeriesSchema(BaseModel):
-    id: str
-    series_id: str
-    created_at: datetime
-
-    class Config:
-        orm_mode = True
 
 class ModelSchema(BaseModel):
     id: int
@@ -32,5 +26,9 @@ class ModelSchema(BaseModel):
     is_active: bool
     created_at: datetime
 
-    class Config:
-        orm_mode = True
+class SeriesModelInfoSchema(BaseModel):
+    time_series_id: int
+    series_id: str
+    current_version: int
+    first_model_created_at: date | None
+    last_model_created_at: date | None

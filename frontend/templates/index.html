@@ -6,6 +6,8 @@
     <title>Treinamento de Modelo - Séries Temporais</title>
     <link rel="icon" href="../static/img/favicon.png" type="image/png">
     <link rel="stylesheet" href="../static/css/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 </head>
 <body>
     <header class="header">
@@ -24,4 +26,49 @@
                 <span style="color: #222425; font-weight: bold;">API Conectada</span>
         </div>
     </header>
-    
+
+<main class="monitor-container">
+
+    <div class="page-header">
+        <h1>Monitor de modelo</h1>
+    </div>
+
+    <div class="toolbar">
+        <button class="tool-btn"><i class="fas fa-plus"></i> Criar</button>
+        <button class="tool-btn"><i class="fas fa-trash"></i> Deletar</button>
+
+        <div class="toolbar-spacer"></div>
+
+        <input class="filter-input" placeholder="Filtro nome do modelo">
+    </div>
+
+<table class="monitor-table">
+    <thead>
+        <tr>
+            <th>
+                <input type="checkbox" id="select-all">
+            </th>
+
+            <th data-key="time_series_id">
+                ID <i class="fas fa-sort"></i>
+            </th>
+
+            <th data-key="series_id">
+                Nome do Modelo <i class="fas fa-sort"></i>
+            </th>
+
+            <th data-key="current_version">
+                Versão <i class="fas fa-sort"></i>
+            </th>
+
+            <th data-key="last_model_created_at">
+                Data Criada <i class="fas fa-sort"></i>
+            </th>
+        </tr>
+    </thead>
+
+    <tbody id="series-table-body"></tbody>
+</table>
+
+</main>
+<script src="../static/js/index.js"></script>
