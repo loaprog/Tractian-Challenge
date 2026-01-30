@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+
 app = FastAPI(title="Desafio Detecção de Anomalias")
 
 @app.get("/")
