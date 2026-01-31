@@ -2,14 +2,17 @@ const tableBody = document.getElementById("series-table-body");
 const filterInput = document.querySelector(".filter-input");
 const selectAllCheckbox = document.getElementById("select-all");
 
-let series = [];
+const btnCreate = document.getElementById("btn-create");
+const btnDelete = document.getElementById("btn-delete");
 
+let series = [];
 
 let sortConfig = {
     key: "time_series_id",
     direction: "asc"
 };
 
+/* LOAD */
 
 async function loadSeries() {
     try {
@@ -55,21 +58,14 @@ function renderTable(data) {
         tr.dataset.id = item.time_series_id;
 
         tr.innerHTML = `
-            <td><input type="checkbox" class="row-check"></td>
+            <td>
+                <input type="checkbox" class="row-check" data-id="${item.time_series_id}">
+            </td>
             <td>${item.time_series_id}</td>
-            <td class="link">${item.series_id}</td>
+            <td>${item.series_id}</td>
             <td>v${item.current_version}</td>
             <td>${item.last_model_created_at ?? "-"}</td>
         `;
-
-        tr.addEventListener("click", (e) => {
-            if (e.target.type === "checkbox") return;
-
-            document
-                .querySelectorAll(".monitor-table tbody tr")
-                .forEach(r => r.classList.remove("selected"));
-            tr.classList.add("selected");
-        });
 
         tableBody.appendChild(tr);
     });
@@ -88,10 +84,8 @@ filterInput.addEventListener("input", () => {
 
 
 selectAllCheckbox.addEventListener("change", () => {
-    const checked = selectAllCheckbox.checked;
-
     document.querySelectorAll(".row-check").forEach(cb => {
-        cb.checked = checked;
+        cb.checked = selectAllCheckbox.checked;
     });
 });
 
@@ -111,5 +105,40 @@ document.querySelectorAll("th[data-key]").forEach(th => {
         renderTable(series);
     });
 });
+
+/* DELETE */
+
+btnDelete.addEventListener("click", async () => {
+    const ids = [...document.querySelectorAll(".row-check:checked")]
+        .map(cb => cb.dataset.id);
+
+    if (!ids.length) {
+        alert("Selecione ao menos uma série.");
+        return;
+    }
+
+    if (!confirm(`Deseja deletar ${ids.length} série(s)?`)) return;
+
+    try {
+        const params = ids.map(id => `series_ids=${id}`).join("&");
+
+        const response = await fetch(`/series/?${params}`, {
+            method: "DELETE"
+        });
+
+        if (!response.ok) throw new Error("Erro ao deletar");
+
+        await loadSeries();
+        selectAllCheckbox.checked = false;
+
+    } catch (error) {
+        console.error(error);
+        alert("Erro ao deletar séries");
+    }
+});
+
+/* CREATE */
+
+
 
 loadSeries();
