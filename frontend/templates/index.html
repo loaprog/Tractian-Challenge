@@ -39,6 +39,10 @@
                 <i class="fas fa-trash"></i> Deletar
             </button>
 
+            <button class="tool-btn" id="btn-predict">
+                <i class="fa-solid fa-play"></i> Analisar
+            </button>
+
             <div class="toolbar-spacer"></div>
 
             <input class="filter-input" placeholder="Filtro nome do modelo">
@@ -70,23 +74,32 @@
             <tbody id="series-table-body"></tbody>
         </table>
 
-        <div class="modal-overlay" id="create-modal">
-            <div class="modal-container">
-                <div class="modal-header">
-                    <h2>Criar Nova Série</h2>
-                    <button class="modal-close" id="close-modal">&times;</button>
-                </div>
-                
-                <div class="modal-body">
+<div class="modal-overlay" id="create-modal">
+    <div class="modal-container">
+
+        <div class="modal-header">
+            <h2>Criar Nova Série</h2>
+            <button class="modal-close" id="close-modal">&times;</button>
+        </div>
+
+        <div class="modal-body">
+<div class="form-group">
+    <label>Series ID</label>
+    <input
+        type="text"
+        id="series-id-input"
+        class="text-input"
+        placeholder="Ex: motor_01"
+    />
+</div>
+
 <div class="form-group">
 
-    <!-- LINHA DOS TÍTULOS -->
     <div class="json-header-row">
         <span>Request Body</span>
         <span>Estrutura esperada</span>
     </div>
 
-    <!-- LINHA DOS CONTEÚDOS -->
     <div class="json-editor-container">
         <div class="json-input-section">
             <textarea
@@ -99,32 +112,32 @@
         <div class="json-example-section">
             <pre class="json-example">
 {
-  "series_id": "string",
   "data": [
     { "timestamp": 0, "value": 0 },
     { "timestamp": 0, "value": 0 }
   ]
 }
-            </pre>
-        </div>
-    </div>
-</div>          
-                    <div class="form-group">
-                        <label>Validação e Pré-visualização</label>
-                        <div class="data-preview" id="data-preview">
-                            <em></em>
+</pre>
                         </div>
                     </div>
                 </div>
-                
-                <div class="modal-footer">
-                    <button class="btn-secondary" id="cancel-modal">Cancelar</button>
-                    <button class="btn-primary" id="submit-modal" disabled>Criar Série</button>
-                </div>
-            </div>
-        </div>
-    </main>
 
-    <script src="../static/js/index.js"></script>
+                <div class="form-group">
+                    <label>Validação e Pré-visualização</label>
+                    <div class="data-preview" id="data-preview"></div>
+                </div>
+
+            </div> 
+
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancel-modal">Cancelar</button>
+                <button class="btn-primary" id="submit-modal" disabled>Criar Série</button>
+            </div>
+
+        </div> 
+    </div> 
+</main>
+
+<script src="../static/js/index.js"></script>
 </body>
 </html>

@@ -140,24 +140,23 @@ btnDelete.addEventListener("click", async () => {
 
 /* CREATE */
 
-/* MODAL CREATE */
-
 const createModal = document.getElementById("create-modal");
 const closeModalBtn = document.getElementById("close-modal");
 const cancelModalBtn = document.getElementById("cancel-modal");
 const submitModalBtn = document.getElementById("submit-modal");
+
 const jsonInput = document.getElementById("json-input");
 const preview = document.getElementById("data-preview");
+const seriesIdInput = document.getElementById("series-id-input");
 
-/* abrir modal */
 btnCreate.addEventListener("click", () => {
     createModal.classList.add("active");
     jsonInput.value = "";
-    preview.innerHTML = "<em>Insira um JSON válido para visualizar</em>";
+    seriesIdInput.value = "";
+    preview.innerHTML = "<em>Insira um JSON válido</em>";
     submitModalBtn.disabled = true;
 });
 
-/* fechar modal */
 function closeModal() {
     createModal.classList.remove("active");
 }
@@ -165,62 +164,77 @@ function closeModal() {
 closeModalBtn.addEventListener("click", closeModal);
 cancelModalBtn.addEventListener("click", closeModal);
 
-/* validação do JSON */
-jsonInput.addEventListener("input", () => {
+jsonInput.addEventListener("input", validateForm);
+seriesIdInput.addEventListener("input", validateForm);
+
+function validateForm() {
     try {
         const parsed = JSON.parse(jsonInput.value);
+        const seriesId = seriesIdInput.value.trim();
 
-        if (
-            typeof parsed.series_id !== "string" ||
-            !Array.isArray(parsed.data)
-        ) {
-            throw new Error("Estrutura inválida");
-        }
+        if (!seriesId) throw new Error("Informe o series_id");
 
-        if (parsed.data.length < 2) {
-            throw new Error("A série precisa ter pelo menos dois pontos");
-        }
+        if (!Array.isArray(parsed.timestamps))
+            throw new Error("Campo timestamps inválido");
 
-        parsed.data.forEach((d, index) => {
-            if (
-                typeof d.timestamp !== "number" ||
-                typeof d.value !== "number"
-            ) {
-                throw new Error(`Ponto inválido na posição ${index}`);
-            }
+        if (!Array.isArray(parsed.values))
+            throw new Error("Campo values inválido");
+
+        if (parsed.timestamps.length !== parsed.values.length)
+            throw new Error("timestamps e values devem ter o mesmo tamanho");
+
+        if (parsed.timestamps.length < 2)
+            throw new Error("Mínimo de 2 pontos");
+
+        parsed.timestamps.forEach((t, i) => {
+            if (typeof t !== "number" || t < 0)
+                throw new Error(`Timestamp inválido na posição ${i}`);
         });
 
+        // ordem crescente
+        const sorted = [...parsed.timestamps].sort((a, b) => a - b);
+        if (JSON.stringify(sorted) !== JSON.stringify(parsed.timestamps))
+            throw new Error("timestamps devem estar em ordem crescente");
+
+        parsed.values.forEach((v, i) => {
+            if (typeof v !== "number")
+                throw new Error(`Value inválido na posição ${i}`);
+        });
+
+        const allEqual = parsed.values.every(v => v === parsed.values[0]);
+        if (allEqual)
+            throw new Error("Values sem variabilidade (std = 0)");
+
         preview.innerHTML = `
-            <strong>Série:</strong> ${parsed.series_id}<br>
-            <strong>Pontos:</strong> ${parsed.data.length}
+            <strong>Série:</strong> ${seriesId}<br>
+            <strong>Pontos:</strong> ${parsed.timestamps.length}
         `;
 
         submitModalBtn.disabled = false;
 
     } catch (e) {
-        preview.innerHTML = `
-            <span style="color:red">
-                ${e.message || "JSON inválido"}
-            </span>
-        `;
+        preview.innerHTML = `<span style="color:red">${e.message}</span>`;
         submitModalBtn.disabled = true;
     }
-});
+}
 
-
-/* submit */
 submitModalBtn.addEventListener("click", async () => {
     try {
         const payload = JSON.parse(jsonInput.value);
+        const seriesId = seriesIdInput.value.trim();
 
-        const response = await fetch("/fit", {
+        const response = await fetch(`/fit/${seriesId}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({
+                timestamps: payload.timestamps,
+                values: payload.values
+            })
         });
 
         if (!response.ok) {
-            throw new Error("Erro ao criar modelo");
+            const err = await response.json();
+            throw new Error(err.detail || "Erro ao criar modelo");
         }
 
         const result = await response.json();
@@ -230,11 +244,9 @@ submitModalBtn.addEventListener("click", async () => {
         closeModal();
         await loadSeries();
 
-    } catch (error) {
-        console.error(error);
-        alert("Erro ao criar modelo");
+    } catch (e) {
+        alert(e.message || "Erro ao criar modelo");
     }
 });
-
 
 loadSeries();

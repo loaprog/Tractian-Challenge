@@ -1,20 +1,22 @@
-from pydantic import BaseModel
-from typing import List
+from pydantic import BaseModel, Field
+from typing import List, Sequence
 from datetime import datetime
 from datetime import date
 
 class DataPoint(BaseModel):
-    timestamp: int
-    value: float
+    timestamp: int = Field(..., description="Unix timestamp of the time the data point was collected")
+    value: float = Field(..., description="Value of the time series measured at timestamp")
 
-class TrainRequest(BaseModel):
-    series_id: str
-    data: List[DataPoint]
+class TimeSeries(BaseModel):
+    data: Sequence[DataPoint] = Field(..., description="Ordered list of datapoints")
 
 class TrainResponse(BaseModel):
     series_id: str
     model_version: int
 
+class TrainFitRequest(BaseModel):
+    timestamps: List[int] = Field(...)
+    values: List[float] = Field(...)
 
 class ModelSchema(BaseModel):
     id: int

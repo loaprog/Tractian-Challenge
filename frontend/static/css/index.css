@@ -347,3 +347,10 @@
 }
 
 
+.text-input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #c8c6c4;
+    border-radius: 4px;
+    font-size: 13px;
+}
