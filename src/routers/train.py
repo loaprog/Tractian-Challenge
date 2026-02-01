@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
-from src.schemas.train import TrainResponse, ModelSchema, SeriesModelInfoSchema, TrainFitRequest
+from src.schemas.train import TrainResponse, SeriesModelInfoSchema, TrainFitRequest
 from src.database.postgresql import get_db  
 from src.services.train import train_model, delete_series_and_models, get_series_with_model_info
 

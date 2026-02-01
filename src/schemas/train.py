@@ -10,23 +10,13 @@ class DataPoint(BaseModel):
 class TimeSeries(BaseModel):
     data: Sequence[DataPoint] = Field(..., description="Ordered list of datapoints")
 
-class TrainResponse(BaseModel):
-    series_id: str
-    model_version: int
-
 class TrainFitRequest(BaseModel):
     timestamps: List[int] = Field(...)
     values: List[float] = Field(...)
 
-class ModelSchema(BaseModel):
-    id: int
-    time_series_id: int
-    series_name: str  
-    version: int
-    mean: float
-    std: float
-    is_active: bool
-    created_at: datetime
+class TrainResponse(BaseModel):
+    series_id: str
+    model_version: int
 
 class SeriesModelInfoSchema(BaseModel):
     time_series_id: int
