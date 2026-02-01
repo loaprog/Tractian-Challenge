@@ -65,6 +65,7 @@ function renderTable(data) {
             <td>${item.series_id}</td>
             <td>v${item.current_version}</td>
             <td>${item.last_model_created_at ?? "-"}</td>
+            <td>${item.first_model_created_at ?? "-"}</td>
         `;
 
         tableBody.appendChild(tr);
@@ -139,6 +140,101 @@ btnDelete.addEventListener("click", async () => {
 
 /* CREATE */
 
+/* MODAL CREATE */
+
+const createModal = document.getElementById("create-modal");
+const closeModalBtn = document.getElementById("close-modal");
+const cancelModalBtn = document.getElementById("cancel-modal");
+const submitModalBtn = document.getElementById("submit-modal");
+const jsonInput = document.getElementById("json-input");
+const preview = document.getElementById("data-preview");
+
+/* abrir modal */
+btnCreate.addEventListener("click", () => {
+    createModal.classList.add("active");
+    jsonInput.value = "";
+    preview.innerHTML = "<em>Insira um JSON válido para visualizar</em>";
+    submitModalBtn.disabled = true;
+});
+
+/* fechar modal */
+function closeModal() {
+    createModal.classList.remove("active");
+}
+
+closeModalBtn.addEventListener("click", closeModal);
+cancelModalBtn.addEventListener("click", closeModal);
+
+/* validação do JSON */
+jsonInput.addEventListener("input", () => {
+    try {
+        const parsed = JSON.parse(jsonInput.value);
+
+        if (
+            typeof parsed.series_id !== "string" ||
+            !Array.isArray(parsed.data)
+        ) {
+            throw new Error("Estrutura inválida");
+        }
+
+        if (parsed.data.length < 2) {
+            throw new Error("A série precisa ter pelo menos dois pontos");
+        }
+
+        parsed.data.forEach((d, index) => {
+            if (
+                typeof d.timestamp !== "number" ||
+                typeof d.value !== "number"
+            ) {
+                throw new Error(`Ponto inválido na posição ${index}`);
+            }
+        });
+
+        preview.innerHTML = `
+            <strong>Série:</strong> ${parsed.series_id}<br>
+            <strong>Pontos:</strong> ${parsed.data.length}
+        `;
+
+        submitModalBtn.disabled = false;
+
+    } catch (e) {
+        preview.innerHTML = `
+            <span style="color:red">
+                ${e.message || "JSON inválido"}
+            </span>
+        `;
+        submitModalBtn.disabled = true;
+    }
+});
+
+
+/* submit */
+submitModalBtn.addEventListener("click", async () => {
+    try {
+        const payload = JSON.parse(jsonInput.value);
+
+        const response = await fetch("/fit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            throw new Error("Erro ao criar modelo");
+        }
+
+        const result = await response.json();
+
+        alert(`Modelo criado: ${result.series_id} (v${result.model_version})`);
+
+        closeModal();
+        await loadSeries();
+
+    } catch (error) {
+        console.error(error);
+        alert("Erro ao criar modelo");
+    }
+});
 
 
 loadSeries();
