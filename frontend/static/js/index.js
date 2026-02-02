@@ -529,3 +529,61 @@ function closeHealthcheckModal() {
 
 closeHealthcheckModalBtn.addEventListener("click", closeHealthcheckModal);
 closeHealthcheckBtn.addEventListener("click", closeHealthcheckModal);
+
+
+async function loadModelsForSeries(timeSeriesId) {
+    try {
+        const response = await fetch(`/series/${timeSeriesId}/models`);
+        if (!response.ok) throw new Error("Erro ao buscar modelos");
+
+        const data = await response.json();
+        return data.models; 
+    } catch (e) {
+        console.error(e);
+        alert("Erro ao carregar modelos");
+        return [];
+    }
+}
+
+
+btnPredict.addEventListener("click", async () => {
+    const selectedRows = document.querySelectorAll(".row-check:checked");
+    if (selectedRows.length !== 1) {
+        alert("Selecione exatamente um modelo para análise");
+        return;
+    }
+
+    const row = selectedRows[0].closest("tr");
+    const timeSeriesId = parseInt(row.dataset.id);
+
+    const models = await loadModelsForSeries(timeSeriesId);
+
+    if (!models.length) {
+        alert("Nenhum modelo encontrado para esta série");
+        return;
+    }
+
+    selectedModel = series.find(s => s.time_series_id === timeSeriesId);
+
+selectedModelInfo.innerHTML = `
+    <strong>${selectedModel.series_id}</strong><br>
+    <strong>Versões disponíveis:</strong><br>
+    ${models.map(m => `
+        <div class="model-badge">
+            <span class="version">Versão: ${m.version}</span> | 
+            <span class="mean">Mean: ${m.mean.toFixed(2)}</span> | 
+            <span class="std">Std: ${m.std.toFixed(2)}</span> | 
+            <span class="status ${m.is_active ? 'active' : 'inactive'}">
+                ${m.is_active ? 'Ativo' : 'Inativo'}
+            </span>
+        </div>
+    `).join('')}
+`;
+    timestampInput.value = "";
+    valueInput.value = "";
+    versionInput.value = "";
+    analysisResult.innerHTML = '<em>Preencha os dados e clique em Analisar</em>';
+    analyzeSubmitBtn.disabled = false;
+    analyzeModal.classList.add("active");
+    setTimeout(() => timestampInput.focus(), 100);
+});

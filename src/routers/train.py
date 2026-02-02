@@ -4,7 +4,8 @@ from typing import List
 
 from src.schemas.train import TrainResponse, SeriesModelInfoSchema, TrainFitRequest
 from src.database.postgresql import get_db  
-from src.services.train import train_model, delete_series_and_models, get_series_with_model_info
+from src.services.train import train_model, delete_series_and_models, get_series_with_model_info, get_models_for_series
+from src.models.train import TimeSeries
 
 train_router = APIRouter()
 
@@ -19,3 +20,7 @@ def get_series(db: Session = Depends(get_db)):
 @train_router.delete("/series/", tags=["track"])
 def delete_series(series_ids: List[int] = Query(..., description="IDs das séries"),db: Session = Depends(get_db)):
     return delete_series_and_models(series_ids, db)
+
+@train_router.get("/series/{series_id}/models", tags=["track"])
+def get_models_by_series(series_id: int, db: Session = Depends(get_db)):
+    return get_models_for_series(db, series_id)

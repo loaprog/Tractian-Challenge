@@ -139,3 +139,28 @@ def get_series_with_model_info(db: Session):
         }
         for r in results
     ]
+
+
+def get_models_for_series(db: Session, series_id: int):
+    series = db.query(TimeSeriesDB).filter_by(id=series_id).first()
+    if not series:
+        raise HTTPException(status_code=404, detail="Série não encontrada")
+
+    models_data = [
+        {
+            "id": m.id,
+            "version": m.version,
+            "mean": m.mean,
+            "std": m.std,
+            "is_active": m.is_active,
+            "training_latency_ms": m.training_latency_ms,
+            "created_at": m.created_at.isoformat()
+        }
+        for m in series.models
+    ]
+
+    return {
+        "time_series_id": series.id,
+        "series_id": series.series_id,
+        "models": models_data
+    }

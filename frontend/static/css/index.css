@@ -425,3 +425,12 @@
     margin-bottom: 10px;
     font-size: 14px;
 }
+
+
+
+
+.status.active {
+    color: #2885f9;
+    font-weight: bold;
+}
+
