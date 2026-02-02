@@ -354,3 +354,69 @@
     border-radius: 4px;
     font-size: 13px;
 }
+
+
+
+/* Estilos para o modal de análise */
+.info-box {
+    background: #f3f9fd;
+    border: 1px solid #cfe4f7;
+    padding: 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.result-box {
+    background: #f8f9fa;
+    border: 1px solid #e0e6ed;
+    padding: 15px;
+    border-radius: 4px;
+    font-size: 14px;
+    min-height: 60px;
+}
+
+.result-box .anomaly {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.result-box .normal {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.form-hint {
+    display: block;
+    color: #666;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* Status indicator */
+.status-indicator {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-left: 10px;
+    font-size: 12px;
+}
+
+.status-indicator .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.anomaly-indicator {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+.normal-indicator {
+    background-color: #e8f5e8;
+    color: #2e7d32;
+}

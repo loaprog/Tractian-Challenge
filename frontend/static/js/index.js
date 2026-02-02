@@ -191,7 +191,6 @@ function validateForm() {
                 throw new Error(`Timestamp inválido na posição ${i}`);
         });
 
-        // ordem crescente
         const sorted = [...parsed.timestamps].sort((a, b) => a - b);
         if (JSON.stringify(sorted) !== JSON.stringify(parsed.timestamps))
             throw new Error("timestamps devem estar em ordem crescente");
@@ -250,3 +249,249 @@ submitModalBtn.addEventListener("click", async () => {
 });
 
 loadSeries();
+
+
+const analyzeModal = document.getElementById("analyze-modal");
+const closeAnalyzeModalBtn = document.getElementById("close-analyze-modal");
+const cancelAnalyzeModalBtn = document.getElementById("cancel-analyze-modal");
+const analyzeSubmitBtn = document.getElementById("analyze-submit-btn");
+const btnPredict = document.getElementById("btn-predict");
+
+const selectedModelInfo = document.getElementById("selected-model-info");
+const timestampInput = document.getElementById("timestamp-input");
+const valueInput = document.getElementById("value-input");
+const versionInput = document.getElementById("version-input");
+const analysisResult = document.getElementById("analysis-result");
+
+let selectedModel = null; 
+
+/* Analisar */
+btnPredict.addEventListener("click", () => {
+    const selectedRows = document.querySelectorAll(".row-check:checked");
+    
+    if (selectedRows.length === 0) {
+        alert("Selecione um modelo para análise");
+        return;
+    }
+    
+    if (selectedRows.length > 1) {
+        alert("Selecione apenas um modelo por vez para análise");
+        return;
+    }
+    
+    const selectedRow = selectedRows[0];
+    const rowElement = selectedRow.closest('tr');
+    
+    if (!rowElement) {
+        alert("Erro ao encontrar linha selecionada");
+        return;
+    }
+    
+    const cells = rowElement.querySelectorAll('td');
+    if (cells.length < 3) {
+        alert("Estrutura da tabela inválida");
+        return;
+    }
+    
+    const timeSeriesId = cells[1].textContent.trim();
+    
+    selectedModel = series.find(s => 
+        s.time_series_id === timeSeriesId || 
+        s.time_series_id.toString() === timeSeriesId
+    );
+    
+    if (!selectedModel) {
+        const seriesId = cells[2].textContent.trim();
+        selectedModel = series.find(s => s.series_id === seriesId);
+        
+        if (!selectedModel) {
+            alert("Modelo não encontrado. Tente recarregar a página.");
+            console.log("Tentou encontrar:", {
+                timeSeriesId,
+                seriesId,
+                seriesDisponiveis: series.map(s => ({ 
+                    time_series_id: s.time_series_id, 
+                    series_id: s.series_id 
+                }))
+            });
+            return;
+        }
+    }
+    
+    selectedModelInfo.innerHTML = `
+        <strong>${selectedModel.series_id}</strong><br>
+        Versão atual: v${selectedModel.current_version}<br>
+        Último treinamento: ${selectedModel.last_model_created_at || "N/A"}
+    `;
+    
+    timestampInput.value = "";
+    valueInput.value = "";
+    versionInput.value = "";
+    analysisResult.innerHTML = '<em>Preencha os dados e clique em Analisar</em>';
+    analyzeSubmitBtn.disabled = false;
+    
+    analyzeModal.classList.add("active");
+    
+    setTimeout(() => timestampInput.focus(), 100);
+});
+
+function closeAnalyzeModal() {
+    analyzeModal.classList.remove("active");
+    selectedModel = null;
+}
+
+closeAnalyzeModalBtn.addEventListener("click", closeAnalyzeModal);
+cancelAnalyzeModalBtn.addEventListener("click", closeAnalyzeModal);
+
+function validateAnalyzeForm() {
+    const timestamp = timestampInput.value.trim();
+    const value = valueInput.value.trim();
+    const numValue = parseFloat(value);
+    
+    if (!timestamp || !value || isNaN(numValue)) {
+        analyzeSubmitBtn.disabled = true;
+        return false;
+    }
+    
+    if (!timestamp.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/)) {
+        console.warn("Formato de timestamp pode não ser o ideal");
+    }
+    
+    analyzeSubmitBtn.disabled = false;
+    return true;
+}
+
+timestampInput.addEventListener("input", validateAnalyzeForm);
+valueInput.addEventListener("input", validateAnalyzeForm);
+
+analyzeSubmitBtn.addEventListener("click", async () => {
+    if (!validateAnalyzeForm() || !selectedModel) {
+        alert("Preencha todos os campos obrigatórios");
+        return;
+    }
+    
+    const payload = {
+        timestamp: timestampInput.value.trim(),
+        value: parseFloat(valueInput.value)
+    };
+    
+    const version = versionInput.value.trim() || null;
+    
+    try {
+        analysisResult.innerHTML = '<div class="loading">Analisando...</div>';
+        analyzeSubmitBtn.disabled = true;
+        
+        let url = `/predict/${encodeURIComponent(selectedModel.series_id)}`;
+        
+        if (version) {
+            url += `?version=${encodeURIComponent(version)}`;
+        }
+        
+        console.log("Enviando requisição para:", url, "com payload:", payload);
+        
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        const responseText = await response.text();
+        console.log("Resposta bruta:", responseText);
+        
+        if (!response.ok) {
+            let errorMessage = `Erro ${response.status}: ${response.statusText}`;
+            try {
+                const errorData = JSON.parse(responseText);
+                errorMessage = errorData.detail || errorMessage;
+            } catch (e) {
+                errorMessage = responseText || errorMessage;
+            }
+            throw new Error(errorMessage);
+        }
+        
+        const result = JSON.parse(responseText);
+        
+        const isAnomaly = result.anomaly;
+        const versionUsed = result.model_version;
+        
+        analysisResult.innerHTML = `
+            <div style="padding: 10px; background-color: ${isAnomaly ? '#ffebee' : '#e8f5e8'}; border-radius: 4px; margin-bottom: 10px;">
+                <strong style="color: ${isAnomaly ? '#c62828' : '#2e7d32'}; font-size: 16px;">
+                    ${isAnomaly ? '⚠️ ANOMALIA DETECTADA' : '✅ COMPORTAMENTO NORMAL'}
+                </strong>
+            </div>
+            <div style="margin-top: 10px; font-size: 14px;">
+                <strong>Versão do modelo:</strong> ${versionUsed}<br>
+                <strong>Timestamp:</strong> ${payload.timestamp}<br>
+                <strong>Valor:</strong> ${payload.value}<br>
+                <strong>Status:</strong> <span style="color: ${isAnomaly ? '#c62828' : '#2e7d32'}">${isAnomaly ? 'Anômalo' : 'Normal'}</span>
+            </div>
+        `;
+        
+        analyzeSubmitBtn.disabled = false;
+        
+    } catch (error) {
+        console.error("Erro na análise:", error);
+        analysisResult.innerHTML = `
+            <div style="padding: 10px; background-color: #ffebee; border-radius: 4px;">
+                <span style="color: #c62828;">
+                    <strong>Erro:</strong> ${error.message}
+                </span>
+            </div>
+        `;
+        analyzeSubmitBtn.disabled = false;
+    }
+});
+
+const style = document.createElement('style');
+style.textContent = `
+    .loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        padding: 20px;
+    }
+    
+    .loading:after {
+        content: '...';
+        animation: dots 1.5s steps(4, end) infinite;
+        margin-left: 5px;
+    }
+    
+    @keyframes dots {
+        0%, 20% { content: ''; }
+        40% { content: '.'; }
+        60% { content: '..'; }
+        80%, 100% { content: '...'; }
+    }
+    
+    .anomaly {
+        color: #c62828;
+        font-weight: bold;
+    }
+    
+    .normal {
+        color: #2e7d32;
+        font-weight: bold;
+    }
+`;
+document.head.appendChild(style);
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && analyzeModal.classList.contains('active')) {
+        closeAnalyzeModal();
+    }
+});
+
+analyzeModal.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !analyzeSubmitBtn.disabled && analyzeModal.classList.contains('active')) {
+        e.preventDefault();
+        analyzeSubmitBtn.click();
+    }
+});
+
+validateAnalyzeForm();
