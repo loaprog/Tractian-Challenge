@@ -78,21 +78,31 @@ def predict_point(
         "model_version": f"v{model.version}"
     }
 
-def get_models_for_series_service(series_id: str, db: Session):
-    ts = db.query(TimeSeries).filter_by(series_id=series_id).first()
-    if not ts:
-        raise HTTPException(status_code=404, detail="Série não encontrada")
-    
-    models = db.query(Model).filter(Model.time_series_id == ts.id).all()
-    
+from sqlalchemy.orm import aliased
+from fastapi import HTTPException
+
+def get_predictions_for_series_service(series_id: str, db: Session):
+    TS = aliased(TimeSeries)
+    M = aliased(Model)
+
+    preds = (
+        db.query(Prediction)
+        .join(M, Prediction.model)      
+        .join(TS, M.time_series)        
+        .filter(TS.series_id == series_id)
+        .order_by(Prediction.timestamp.desc())
+        .all()
+    )
+
+    if not preds:
+        raise HTTPException(status_code=404, detail="Nenhuma previsão encontrada para esta série")
+
     return [
         {
-            "id": m.id,
-            "version": m.version,
-            "mean": m.mean,
-            "std": m.std,
-            "is_active": m.is_active,
-            "created_at": m.created_at.isoformat()
+            "timestamp": p.timestamp,
+            "value": p.value,
+            "anomaly": p.is_anomaly,
+            "model_version": p.model.version
         }
-        for m in models
+        for p in preds
     ]
