@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, Float, Boolean, ForeignKey, TIMESTAMP
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
+from sqlalchemy.orm import relationship
 
 from src.configs.environments import Base
 
@@ -16,3 +17,5 @@ class Prediction(Base):
     is_anomaly = Column(Boolean, nullable=False)
     latency_ms = Column(Float, nullable=False)
     created_at = Column(TIMESTAMP, default=datetime.utcnow)
+
+    model = relationship("Model")  

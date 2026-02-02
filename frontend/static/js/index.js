@@ -549,7 +549,6 @@ async function loadModelsForSeries(timeSeriesId) {
 btnPredict.addEventListener("click", async () => {
     const selectedRows = document.querySelectorAll(".row-check:checked");
     if (selectedRows.length !== 1) {
-        alert("Selecione exatamente um modelo para análise");
         return;
     }
 

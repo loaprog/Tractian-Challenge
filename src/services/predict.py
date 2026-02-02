@@ -77,3 +77,22 @@ def predict_point(
         "anomaly": is_anomaly,
         "model_version": f"v{model.version}"
     }
+
+def get_models_for_series_service(series_id: str, db: Session):
+    ts = db.query(TimeSeries).filter_by(series_id=series_id).first()
+    if not ts:
+        raise HTTPException(status_code=404, detail="Série não encontrada")
+    
+    models = db.query(Model).filter(Model.time_series_id == ts.id).all()
+    
+    return [
+        {
+            "id": m.id,
+            "version": m.version,
+            "mean": m.mean,
+            "std": m.std,
+            "is_active": m.is_active,
+            "created_at": m.created_at.isoformat()
+        }
+        for m in models
+    ]
