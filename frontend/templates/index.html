@@ -43,6 +43,10 @@
                 <i class="fa-solid fa-play"></i> Analisar
             </button>
 
+            <button class="tool-btn" id="btn-healthcheck">
+                <i class="fas fa-heartbeat"></i> Healthcheck
+            </button>
+
             <div class="toolbar-spacer"></div>
 
             <input class="filter-input" placeholder="Filtro nome do modelo">
@@ -197,6 +201,21 @@
         <div class="modal-footer">
             <button class="btn-secondary" id="cancel-analyze-modal">Cancelar</button>
             <button class="btn-primary" id="analyze-submit-btn" disabled>Analisar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="healthcheck-modal">
+    <div class="modal-container" style="width: 400px;">
+        <div class="modal-header">
+            <h2>Status da API</h2>
+            <button class="modal-close" id="close-healthcheck-modal">&times;</button>
+        </div>
+        <div class="modal-body" id="healthcheck-content">
+            <p>Carregando métricas...</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" id="close-healthcheck-btn">Fechar</button>
         </div>
     </div>
 </div>

@@ -495,3 +495,37 @@ analyzeModal.addEventListener('keydown', (e) => {
 });
 
 validateAnalyzeForm();
+
+/* Healthcheck */
+
+const btnHealthcheck = document.getElementById("btn-healthcheck");
+const healthcheckModal = document.getElementById("healthcheck-modal");
+const closeHealthcheckModalBtn = document.getElementById("close-healthcheck-modal");
+const closeHealthcheckBtn = document.getElementById("close-healthcheck-btn");
+const healthcheckContent = document.getElementById("healthcheck-content");
+
+btnHealthcheck.addEventListener("click", async () => {
+    healthcheckModal.classList.add("active");
+    healthcheckContent.innerHTML = "<p>Carregando métricas...</p>";
+
+    try {
+        const response = await fetch("/healthcheck");
+        if (!response.ok) throw new Error(`Erro ${response.status}`);
+        const data = await response.json();
+
+        healthcheckContent.innerHTML = `
+            <p><strong>Séries treinadas:</strong> ${data.series_trained}</p>
+            <p><strong>Latência de Inferência (ms):</strong> avg ${data.inference_latency_ms.avg ?? "-"}, p95 ${data.inference_latency_ms.p95 ?? "-"}</p>
+            <p><strong>Latência de Treino (ms):</strong> avg ${data.training_latency_ms.avg ?? "-"}, p95 ${data.training_latency_ms.p95 ?? "-"}</p>
+        `;
+    } catch (e) {
+        healthcheckContent.innerHTML = `<p style="color:red;">Erro ao carregar métricas: ${e.message}</p>`;
+    }
+});
+
+function closeHealthcheckModal() {
+    healthcheckModal.classList.remove("active");
+}
+
+closeHealthcheckModalBtn.addEventListener("click", closeHealthcheckModal);
+closeHealthcheckBtn.addEventListener("click", closeHealthcheckModal);

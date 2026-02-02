@@ -420,3 +420,8 @@
     background-color: #e8f5e8;
     color: #2e7d32;
 }
+
+#healthcheck-content p {
+    margin-bottom: 10px;
+    font-size: 14px;
+}
