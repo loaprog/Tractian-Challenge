@@ -29,6 +29,7 @@ class Model(Base):
     mean = Column(Float, nullable=False)
     std = Column(Float, nullable=False)
     is_active = Column(Boolean, default=False)
+    training_latency_ms = Column(Float, nullable=True)
     created_at = Column(TIMESTAMP, default=datetime.utcnow)
     
     time_series = relationship("TimeSeries", back_populates="models")

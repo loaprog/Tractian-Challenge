@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS anomalias.models (
     mean DOUBLE PRECISION NOT NULL,
     std DOUBLE PRECISION NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
+    training_latency_ms DOUBLE PRECISION,
     created_at TIMESTAMP DEFAULT NOW(),
 
     CONSTRAINT fk_models_time_series
@@ -31,6 +32,7 @@ CREATE TABLE IF NOT EXISTS anomalias.predictions (
     timestamp BIGINT NOT NULL,
     value DOUBLE PRECISION NOT NULL,
     is_anomaly BOOLEAN NOT NULL,
+    latency_ms DOUBLE PRECISION NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
 
     CONSTRAINT fk_predictions_models

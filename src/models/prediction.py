@@ -14,4 +14,5 @@ class Prediction(Base):
     timestamp = Column(Integer, nullable=False)
     value = Column(Float, nullable=False)
     is_anomaly = Column(Boolean, nullable=False)
+    latency_ms = Column(Float, nullable=False)
     created_at = Column(TIMESTAMP, default=datetime.utcnow)

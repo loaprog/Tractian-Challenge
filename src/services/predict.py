@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+import time
 
 from src.models.train import TimeSeries, Model
 from src.models.prediction import Prediction
@@ -26,11 +27,7 @@ def predict_point(
             detail="timestamp deve ser >= 0"
         )
 
-    ts = (
-        db.query(TimeSeries)
-        .filter_by(series_id=series_id)
-        .first()
-    )
+    ts = db.query(TimeSeries).filter_by(series_id=series_id).first()
 
     if not ts:
         raise HTTPException(
@@ -58,14 +55,19 @@ def predict_point(
             detail="Modelo não encontrado para a série"
         )
 
+    start = time.perf_counter()
+
     threshold = model.mean + 3 * model.std
     is_anomaly = payload.value > threshold
 
+    latency_ms = (time.perf_counter() - start) * 1000
+
     prediction = Prediction(
         model_id=model.id,
-        timestamp=timestamp_int, 
+        timestamp=timestamp_int,
         value=payload.value,
-        is_anomaly=is_anomaly
+        is_anomaly=is_anomaly,
+        latency_ms=latency_ms
     )
 
     db.add(prediction)
