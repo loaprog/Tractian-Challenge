@@ -239,7 +239,7 @@ submitModalBtn.addEventListener("click", async () => {
 
         const result = await response.json();
 
-        alert(`Modelo criado: ${result.series_id} (v${result.model_version})`);
+        alert(`Modelo criado: ${result.series_id} (${result.version})\nPontos usados: ${result.points_used}`);
 
         closeModal();
         await loadSeries();

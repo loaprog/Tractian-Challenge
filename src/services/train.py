@@ -103,7 +103,11 @@ def train_model(
             )
         )
 
-    return ts_db.series_id, new_version
+    return {
+        "series_id": ts_db.series_id,
+        "version": f"v{new_version}",
+        "points_used": len(payload.values)
+    }
 
 
 def delete_series_and_models(series_ids: list[int], db: Session):

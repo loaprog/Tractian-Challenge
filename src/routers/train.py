@@ -9,9 +9,8 @@ from src.services.train import train_model, delete_series_and_models, get_series
 train_router = APIRouter()
 
 @train_router.post("/fit/{series_id}", response_model=TrainResponse, tags=["Training"])
-def train(series_id: str, payload: TrainFitRequest,db: Session = Depends(get_db)):
-    series_id, model_version = train_model(series_id=series_id,payload=payload,db=db)
-    return TrainResponse(series_id=series_id,model_version=model_version)
+def train(series_id: str,payload: TrainFitRequest,db: Session = Depends(get_db)):
+    return train_model(series_id=series_id,payload=payload,db=db)
 
 @train_router.get("/series/", response_model=list[SeriesModelInfoSchema], tags=["track"])
 def get_series(db: Session = Depends(get_db)):

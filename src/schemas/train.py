@@ -16,7 +16,8 @@ class TrainFitRequest(BaseModel):
 
 class TrainResponse(BaseModel):
     series_id: str
-    model_version: int
+    version: str
+    points_used: int
 
 class SeriesModelInfoSchema(BaseModel):
     time_series_id: int
