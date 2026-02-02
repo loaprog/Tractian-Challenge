@@ -42,7 +42,7 @@ def train_model(
             detail="Dados insuficientes para treino"
         )
 
-    MAX_POINTS = 100_000 #proteção DoS
+    MAX_POINTS = 100_000 
     if len(payload.values) > MAX_POINTS:
         raise HTTPException(
             status_code=413,

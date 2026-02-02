@@ -1,10 +1,10 @@
-# models/train.py
 from sqlalchemy import Column, String, Boolean, Integer, Float, TIMESTAMP, ForeignKey, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
-Base = declarative_base()
+from src.configs.environments import Base
+
 
 class TimeSeries(Base):
     __tablename__ = "time_series"
